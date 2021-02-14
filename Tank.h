@@ -25,4 +25,6 @@ void AddTank(uint8_t tier, const Vector2& position, TanksData& tanksData);
 void MoveTanks(TanksData& tanksData, GameField& fieldData);
 void UpdateSprites(TanksData& tanksData);
 void Fire(size_t indexOfTank, Bullets& bulletsData, TanksData& tanksData);
+void CheckHits(Bullets& bulletsData, TanksData& tanksData);
+void DestroyTankAndBullets(size_t index, Bullets& bulletsData, TanksData& tanksData);
 

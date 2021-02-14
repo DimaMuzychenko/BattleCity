@@ -19,6 +19,10 @@ void AddTile(uint8_t type, const Vector2& position, GameField& fieldData)
 	{
 		sprite = createSprite("Resources\\Tiles\\5.png");
 	}
+	if (type == 9)
+	{
+		return;
+	}
 	if (type == 10)
 	{
 		sprite = createSprite("Resources\\Tiles\\Base.png");
@@ -119,8 +123,7 @@ void UpdateWallsState(GameField& fieldData, Bullets& bulletsData, TanksData& tan
 		}
 		if (collisionOccured)
 		{
-			tanksData.shots[bulletsData.owners[j]] = 0;
-			DestroyBullet(j, bulletsData);
+			DestroyBullet(j, bulletsData, tanksData);
 		}
 	}
 }

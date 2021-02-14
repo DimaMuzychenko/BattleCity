@@ -52,14 +52,31 @@ void MoveBullets(Bullets& bulletsData)
 	}
 }
 
-void DestroyBullet(size_t index, Bullets& bulletsData)
+void DestroyBullet(size_t index, Bullets& bulletsData, TanksData& tanksData)
 {
+	destroySprite(bulletsData.sprites[index]);
+
+	tanksData.shots[bulletsData.owners[index]]--;
+
 	std::vector<uint8_t>::iterator dirIter(bulletsData.directions.begin() + index);
 	bulletsData.directions.erase(dirIter);
 	std::vector<Vector2>::iterator posIter(bulletsData.positions.begin() + index);
 	bulletsData.positions.erase(posIter);
 	std::vector<Bounds>::iterator bndIter(bulletsData.bounds.begin() + index);
-	bulletsData.bounds.erase(bndIter);
+	bulletsData.bounds.erase(bndIter);	
 	std::vector<Sprite*>::iterator sprIter(bulletsData.sprites.begin() + index);
 	bulletsData.sprites.erase(sprIter);
+}
+
+bool GetBulletByOwner(size_t& bulletIndex, size_t owner, Bullets& bulletsData)
+{
+	for (size_t i{ 0 }; i < bulletsData.owners.size(); ++i)
+	{
+		if (bulletsData.owners[i] == owner)
+		{
+			bulletIndex = i;
+			return true;
+		}
+	}
+	return false;
 }

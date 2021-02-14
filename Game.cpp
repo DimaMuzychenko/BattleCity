@@ -9,10 +9,10 @@
 void DrawGameObjects(const GameObject& goData);
 void DrawTanks(const TanksData& tanksData);
 void DrawField(const GameField& wallsData);
+void SpawnEnemy(int& enemiesCount, TanksData& tanksData);
 
 
-
-class MyFramework : public Framework {
+class Game : public Framework {
 
 public:
 
@@ -28,6 +28,7 @@ public:
 		backGround = createSprite("Resources\\BG.png");
 		Vector2 pos(400, 300);
 		AddTank(0, pos, tanksData);
+		SpawnEnemy(enemiesCount, tanksData);
 		return true;
 	}
 
@@ -44,6 +45,11 @@ public:
 		DrawGameObjects(bulletsData);
 		if (!fieldData.baseDefeated)
 		{
+			if (enemiesCount - tanksData.bounds.size() - 1 < 4 && enemiesCount <= 20)
+			{
+				SpawnEnemy(enemiesCount, tanksData);
+			}
+			CheckHits(bulletsData, tanksData);
 			UpdateSprites(tanksData);
 			MoveTanks(tanksData, fieldData);
 			MoveBullets(bulletsData);
@@ -116,11 +122,12 @@ public:
 	GameField fieldData;
 	Bullets bulletsData;
 	Sprite* backGround;
+	int enemiesCount{ 0 };
 };
 
 int main(int argc, char* argv[])
 {
-	return run(new MyFramework);
+	return run(new Game);
 }
 
 void DrawGameObjects(const GameObject& goData)
@@ -147,3 +154,19 @@ void DrawField(const GameField& wallsData)
 	}
 }
 
+void SpawnEnemy(int& enemiesCount, TanksData& tanksData)
+{
+	Vector2 spawnPos;
+	for (uint8_t i{ 0 }; i < LEVEL_X_SIZE; ++i)
+	{
+		if (level[1][i] == 9)
+		{
+			spawnPos = Vector2(i * TILE_SIZE, TILE_SIZE);
+			if (!CheckCollision(Bounds(spawnPos, Vector2(spawnPos.x + 40, spawnPos.y + 40)), tanksData))
+			{
+				AddTank(0, spawnPos, tanksData);
+				enemiesCount++;
+			}
+		}
+	}	
+}

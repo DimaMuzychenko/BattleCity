@@ -7,7 +7,7 @@ void AddTank(uint8_t tier, const Vector2& position, TanksData& tanksData)
 {
 	// if no tanks in tanksData, then add player's tank sprite, else enemy's sprite
 	std::string spritePath = (tanksData.tiers.size() == 0 ? GOLDEN : SILVER)
-		+ std::to_string(tier) + "_" + std::to_string((uint8_t)Direction::UP) + "_0.png";
+		+ std::to_string(tier) + "_" + std::to_string((uint8_t)(tanksData.tiers.size() == 0 ? Direction::UP : Direction::DOWN)) + "_0.png";
 
 	Sprite* sprite = createSprite(spritePath.c_str());
 
@@ -116,4 +116,67 @@ void Fire(size_t indexOfTank, Bullets& bulletsData, TanksData& tanksData)
 	}
 	AddBullet(indexOfTank, position, tanksData.sights[indexOfTank], bulletsData);
 	tanksData.shots[indexOfTank] = 1;
+}
+
+void DestroyTankAndBullets(size_t index, Bullets& bulletsData, TanksData& tanksData)
+{
+	destroySprite(tanksData.sprites[index]);
+
+	size_t bulletIndex;
+	for (uint8_t i{ 0 }; i < tanksData.shots[index]; ++i)
+	{
+		if (GetBulletByOwner(bulletIndex, index, bulletsData))
+		{
+			DestroyBullet(bulletIndex, bulletsData, tanksData);
+		}		
+	}
+
+	std::vector<Bounds>::iterator bndIter(tanksData.bounds.begin() + index);
+	tanksData.bounds.erase(bndIter);
+	std::vector<uint8_t>::iterator bsIter(tanksData.bulletSpeeds.begin() + index);
+	tanksData.bulletSpeeds.erase(bsIter);
+	std::vector<uint8_t>::iterator dmgIter(tanksData.damages.begin() + index);
+	tanksData.damages.erase(dmgIter);
+	std::vector<uint8_t>::iterator dirIter(tanksData.directions.begin() + index);
+	tanksData.directions.erase(dirIter);
+	std::vector<uint8_t>::iterator hlthIter(tanksData.health.begin() + index);
+	tanksData.health.erase(hlthIter);
+	std::vector<uint8_t>::iterator msIter(tanksData.movementSpeeds.begin() + index);
+	tanksData.movementSpeeds.erase(msIter);
+	std::vector<Vector2>::iterator posIter(tanksData.positions.begin() + index);
+	tanksData.positions.erase(posIter);
+	std::vector<uint8_t>::iterator shtIter(tanksData.shots.begin() + index);	
+	tanksData.shots.erase(shtIter);
+	std::vector<uint8_t>::iterator sghtIter(tanksData.sights.begin() + index);
+	tanksData.sights.erase(sghtIter);
+	std::vector<Sprite*>::iterator sprIter(tanksData.sprites.begin() + index);
+	tanksData.sprites.erase(sprIter);
+	std::vector<uint8_t>::iterator trIter(tanksData.tiers.begin() + index);
+	tanksData.tiers.erase(trIter);	
+}
+
+
+void CheckHits(Bullets& bulletsData, TanksData& tanksData)
+{
+	for (size_t j{ 0 }; j < bulletsData.bounds.size(); ++j)
+	{
+		for (size_t i{ 0 }; i < tanksData.bounds.size(); ++i)
+		{
+			if (CheckCollision(bulletsData.bounds[j], tanksData.bounds[i]))
+			{
+				std::cout << "Bullet collision occured" << std::endl;
+				if (!(bulletsData.owners[j] == 0 && i == 0))
+				{
+					if (!(bulletsData.owners[j] != 0 && i != 0))
+					{
+						if (--tanksData.health[i] == 0)
+						{
+							DestroyTankAndBullets(i, bulletsData, tanksData);
+						}
+						DestroyBullet(j, bulletsData, tanksData);
+					}				
+				}				
+			}
+		}
+	}
 }

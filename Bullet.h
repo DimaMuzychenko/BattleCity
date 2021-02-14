@@ -16,4 +16,5 @@ struct Bullets : GameObject
 
 void AddBullet(size_t owner, const Vector2& position, uint8_t direction, Bullets& bulletsData);
 void MoveBullets(Bullets& bulletsData);
-void DestroyBullet(size_t index, Bullets& bulletsData);
+void DestroyBullet(size_t index, Bullets& bulletsData, TanksData& tanksData);
+bool GetBulletByOwner(size_t& bulletIndex, size_t owner, Bullets& bulletsData);
