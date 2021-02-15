@@ -1,11 +1,7 @@
-﻿  Bullet.cpp
-  GameField.cpp
-  Game.cpp
-I:\Games\MyGames\Battle city\Game.cpp(164,25): warning C4244: аргумент: преобразование "int" в "float", возможна потеря данных
-  Tank.cpp
+﻿  Tank.cpp
   Создание кода
-  9 of 434 functions ( 2.1%) were compiled, the rest were copied from previous compilation.
-    1 functions were new in current compilation
-    13 functions had inline decision re-evaluated but remain unchanged
+  0 of 434 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
   Создание кода завершено
   Battle city.vcxproj -> I:\Games\MyGames\Battle city\x64\Release\Battle city.exe

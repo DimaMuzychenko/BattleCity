@@ -46,7 +46,7 @@ void UpdateSprites(TanksData& tanksData)
 void MoveTanks(TanksData& tanksData, GameField& fieldData)
 {
 	Bounds temp; // Precalculated bounds to be checked for collision
-
+	bool collidesTank = false;
 	for (size_t i{ 0 }; i < tanksData.positions.size(); ++i)
 	{
 		if (tanksData.directions[i] == (uint8_t)Direction::COUNT)
@@ -78,8 +78,20 @@ void MoveTanks(TanksData& tanksData, GameField& fieldData)
 			temp.topLeft.x = tanksData.bounds[i].topLeft.x - 1.f;
 			temp.bottomRight.x = tanksData.bounds[i].bottomRight.x - 1.f;
 		}
+		// Check current (i) tank for collision with another tanks (j)
+		for (size_t j{ 0 }; j < tanksData.bounds.size(); ++j)
+		{
+			if (i != j)
+			{
+				if (CheckCollision(temp, tanksData.bounds[j]))
+				{
+					collidesTank = true;
+					break;
+				}
+			}			
+		}
 
-		if (!CheckCollision(temp, fieldData))
+		if (!CheckCollision(temp, fieldData) && !collidesTank)
 		{
 			tanksData.positions[i] = temp.topLeft;
 			tanksData.bounds[i] = temp;

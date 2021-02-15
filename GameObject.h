@@ -27,7 +27,7 @@ Direction RelationalPosition(const Bounds& first, const Bounds& second);
 /// Check for collision of game objects.
 /// </summary>
 /// <param name="index">Index of object to check collition.</param>
-/// <param name="bjectsData">Data of objects that need be checked.</param>
+/// <param name="objectsData">Data of objects that need be checked.</param>
 /// <param name="obstaclesData">Data of objects that can be obstacles.</param>
 bool CheckCollision(size_t index, const GameObject& objectsData, const GameObject& obstaclesData);
 

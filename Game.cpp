@@ -45,7 +45,7 @@ public:
 		DrawGameObjects(bulletsData);
 		if (!fieldData.baseDefeated)
 		{
-			if (enemiesCount - tanksData.bounds.size() - 1 < 4 && enemiesCount <= 20)
+			if (tanksData.bounds.size() < 4 && enemiesCount <= 20)
 			{
 				SpawnEnemy(enemiesCount, tanksData);
 			}
