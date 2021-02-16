@@ -27,19 +27,19 @@ Direction RelationalPosition(size_t first, size_t second, const GameObject& firs
 
 Direction RelationalPosition(const Bounds& first, const Bounds& second)
 {
-	if (first.topLeft.y <= second.bottomRight.y && first.topLeft.y > second.bottomRight.y - 0.5f)
+	if (first.topLeft.y <= second.bottomRight.y && first.topLeft.y > second.bottomRight.y - 1.5f)
 	{
 		return Direction::UP;
 	}
-	else if (first.topLeft.x <= second.bottomRight.x && first.topLeft.x > second.bottomRight.x - 0.5f)
+	else if (first.topLeft.x <= second.bottomRight.x && first.topLeft.x > second.bottomRight.x - 1.5f)
 	{
 		return Direction::LEFT;
 	}
-	else if (first.bottomRight.y >= second.topLeft.y && first.bottomRight.y < second.topLeft.y + 0.5f)
+	else if (first.bottomRight.y >= second.topLeft.y && first.bottomRight.y < second.topLeft.y + 1.5f)
 	{
 		return Direction::DOWN;
 	}
-	else if (first.bottomRight.x >= second.topLeft.x && first.bottomRight.x < second.topLeft.x + 0.5f)
+	else if (first.bottomRight.x >= second.topLeft.x && first.bottomRight.x < second.topLeft.x + 1.5f)
 	{
 		return Direction::RIGHT;
 	}
@@ -92,6 +92,35 @@ bool CheckCollision(const Bounds& object, const GameObject& obstaclesData)
 	return false;
 }
 
+bool CheckExcludingCollision(size_t index, const Bounds& object, const GameObject& obstaclesData)
+{
+	for (size_t i{ 0 }; i < obstaclesData.bounds.size(); ++i)
+	{
+		if (i == index)
+		{
+			continue;
+		}
+
+		if (object.topLeft.y <= obstaclesData.bounds[i].bottomRight.y)
+		{
+			if (object.bottomRight.y >= obstaclesData.bounds[i].topLeft.y)
+			{
+				if (object.topLeft.x <= obstaclesData.bounds[i].bottomRight.x)
+				{
+					if (object.bottomRight.x >= obstaclesData.bounds[i].topLeft.x)
+					{
+						/*std::cout << "Collision detected!" << std::endl;
+						std::cout << "Tank's bounds: (" << object.topLeft.x << ", " << object.topLeft.y << ") (" << object.bottomRight.x << ", " << object.bottomRight.y << ")" << std::endl;
+						std::cout << "Obstacle's bounds: (" << obstaclesData.bounds[i].topLeft.x << ", " << obstaclesData.bounds[i].topLeft.y << ") (" << obstaclesData.bounds[i].bottomRight.x << ", " << obstaclesData.bounds[i].bottomRight.y << ")" << std::endl;*/
+						return true;
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
 bool CheckCollision(const Bounds& object, const Bounds& obstacle)
 {
 	if (object.topLeft.y <= obstacle.bottomRight.y)
@@ -102,9 +131,9 @@ bool CheckCollision(const Bounds& object, const Bounds& obstacle)
 			{
 				if (object.bottomRight.x >= obstacle.topLeft.x)
 				{
-					std::cout << "Collision detected!" << std::endl;
+					/*std::cout << "Collision detected!" << std::endl;
 					std::cout << "Tank's bounds: (" << object.topLeft.x << ", " << object.topLeft.y << ") (" << object.bottomRight.x << ", " << object.bottomRight.y << ")" << std::endl;
-					std::cout << "Obstacle's bounds: (" << obstacle.topLeft.x << ", " << obstacle.topLeft.y << ") (" << obstacle.bottomRight.x << ", " << obstacle.bottomRight.y << ")" << std::endl;
+					std::cout << "Obstacle's bounds: (" << obstacle.topLeft.x << ", " << obstacle.topLeft.y << ") (" << obstacle.bottomRight.x << ", " << obstacle.bottomRight.y << ")" << std::endl;*/
 					return true;
 				}
 			}
@@ -113,3 +142,69 @@ bool CheckCollision(const Bounds& object, const Bounds& obstacle)
 	return false;
 }
 
+bool CheckPotentialCollision(uint8_t direction, float step, Bounds& object, const GameObject& obstacles)
+{
+	return CheckCollision(GetPotentialBounds(direction, step, object), obstacles);
+}
+
+
+bool CheckPotentialCollision(uint8_t direction, float step, const Bounds& object, const Bounds& obstacle)
+{	
+	return CheckCollision(GetPotentialBounds(direction, step, object), obstacle);
+}
+
+Bounds GetPotentialBounds(uint8_t direction, float step, const Bounds& object)
+{
+	Bounds temp = object;
+
+	if (direction == (uint8_t)Direction::UP)
+	{
+		temp.topLeft.y -= step;
+		temp.bottomRight.y -= step;
+	}
+	if (direction == (uint8_t)Direction::RIGHT)
+	{
+		temp.topLeft.x += step;
+		temp.bottomRight.x += step;
+	}
+	if (direction == (uint8_t)Direction::DOWN)
+	{
+		temp.topLeft.y += step;
+		temp.bottomRight.y += step;
+	}
+	if (direction == (uint8_t)Direction::LEFT)
+	{
+		temp.topLeft.x -= step;
+		temp.bottomRight.x -= step;
+	}
+	return temp;
+}
+
+bool CheckExcludingPotentialCollision(size_t index, uint8_t direction, float step, const Bounds& object, const GameObject& obstacles)
+{
+	return CheckExcludingCollision(index, GetPotentialBounds(direction, step, object), obstacles);
+}
+
+size_t GetObstacle(const Bounds& object, const GameObject& obstaclesData)
+{
+	for (size_t i{ 0 }; i < obstaclesData.bounds.size(); ++i)
+	{
+		if (object.topLeft.y <= obstaclesData.bounds[i].bottomRight.y)
+		{
+			if (object.bottomRight.y >= obstaclesData.bounds[i].topLeft.y)
+			{
+				if (object.topLeft.x <= obstaclesData.bounds[i].bottomRight.x)
+				{
+					if (object.bottomRight.x >= obstaclesData.bounds[i].topLeft.x)
+					{
+						/*std::cout << "Collision detected!" << std::endl;
+						std::cout << "Tank's bounds: (" << object.topLeft.x << ", " << object.topLeft.y << ") (" << object.bottomRight.x << ", " << object.bottomRight.y << ")" << std::endl;
+						std::cout << "Obstacle's bounds: (" << obstaclesData.bounds[i].topLeft.x << ", " << obstaclesData.bounds[i].topLeft.y << ") (" << obstaclesData.bounds[i].bottomRight.x << ", " << obstaclesData.bounds[i].bottomRight.y << ")" << std::endl;*/
+						return i;
+					}
+				}
+			}
+		}
+	}
+	return -1;
+}

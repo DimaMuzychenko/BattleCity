@@ -6,6 +6,7 @@
 
 
 
+
 struct TanksData : GameObject
 {
 	std::vector<uint8_t> tiers;
@@ -21,10 +22,14 @@ struct TanksData : GameObject
 #include "GameField.h"
 #include "Bullet.h"
 
+
 void AddTank(uint8_t tier, const Vector2& position, TanksData& tanksData);
 void MoveTanks(TanksData& tanksData, GameField& fieldData);
 void UpdateSprites(TanksData& tanksData);
 void Fire(size_t indexOfTank, Bullets& bulletsData, TanksData& tanksData);
-void CheckHits(Bullets& bulletsData, TanksData& tanksData);
+void CheckHits(Bullets& bulletsData, TanksData& tanksData, GameField& fieldData);
 void DestroyTankAndBullets(size_t index, Bullets& bulletsData, TanksData& tanksData);
-
+void ControlEnemies(TanksData& tanksData, GameField& fieldData);
+void FireByEnemies(TanksData& tanksData, Bullets& bulletsData);
+void RespawnPlayersTank(TanksData& tanksData, GameField& fieldData);
+void SpawnEnemy(int& enemiesCount, TanksData& tanksData);

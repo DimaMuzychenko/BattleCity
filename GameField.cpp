@@ -7,26 +7,40 @@
 void AddTile(uint8_t type, const Vector2& position, GameField& fieldData)
 {
 	Sprite* sprite = createSprite("Resources\\Tiles\\1.png");
-	if (type == 0)
+	/*if (type == 0)
 	{
 		return;
-	}
+	}*/
 	if (type == 1)
 	{
 		sprite = createSprite("Resources\\Tiles\\1.png");
 	}
-	if (type == 5)
+	else if (type == 5)
 	{
 		sprite = createSprite("Resources\\Tiles\\5.png");
+	}
+	/*if (type == 7)
+	{
+		return;
+
+	}
+	if (type == 8)
+	{
+		return;
+		
 	}
 	if (type == 9)
 	{
 		return;
-	}
-	if (type == 10)
+	}*/
+	else if (type == 10)
 	{
 		sprite = createSprite("Resources\\Tiles\\Base.png");
 		fieldData.bounds.push_back(Bounds(position, Vector2(position.x + TILE_SIZE * 2, position.y + TILE_SIZE * 2)));
+	}
+	else
+	{
+		return;
 	}
 	if (type != 10)
 	{
@@ -106,6 +120,7 @@ void UpdateWallsState(GameField& fieldData, Bullets& bulletsData, TanksData& tan
 				collisionOccured = true;
 				if (fieldData.types[i] == 1)
 				{
+					std::cout << "Side: " << (int)RelationalPosition(fieldData.bounds[i], bulletsData.bounds[j]) << std::endl;
 					HarmBrickTile(i, RelationalPosition(fieldData.bounds[i], bulletsData.bounds[j]), fieldData);
 					i = 0;
 				}

@@ -2,6 +2,7 @@
 #include "GameObjectsParameters.h"
 #include <string>
 #include <iostream>
+#include "Level.h"
 
 void AddTank(uint8_t tier, const Vector2& position, TanksData& tanksData)
 {
@@ -15,14 +16,14 @@ void AddTank(uint8_t tier, const Vector2& position, TanksData& tanksData)
 	getSpriteSize(sprite, w, h);
 
 	tanksData.tiers.push_back(tier);
-	tanksData.health.push_back(HEALTH[tier]);
+	tanksData.health.push_back(tanksData.health.size() == 0 ? 3 : HEALTH[tier]);
 	tanksData.damages.push_back(1);
 	tanksData.movementSpeeds.push_back(MOVEMENT_SPEED[tier]);
 	tanksData.bulletSpeeds.push_back(BULLET_SPEED[tier]);
 	tanksData.positions.push_back(position);
 	tanksData.bounds.push_back(Bounds{ position, Vector2{position.x + w, position.y + h } });
 	tanksData.sprites.push_back(sprite);
-	tanksData.directions.push_back((uint8_t)Direction::COUNT);
+	tanksData.directions.push_back(tanksData.directions.size() == 0 ? (uint8_t)Direction::COUNT : (uint8_t)Direction::DOWN);
 	tanksData.sights.push_back((uint8_t)Direction::UP);
 	tanksData.shots.push_back(0);
 
@@ -44,46 +45,22 @@ void UpdateSprites(TanksData& tanksData)
 }
 
 void MoveTanks(TanksData& tanksData, GameField& fieldData)
-{
-	Bounds temp; // Precalculated bounds to be checked for collision
+{	
 	bool collidesTank = false;
 	for (size_t i{ 0 }; i < tanksData.positions.size(); ++i)
 	{
-		if (tanksData.directions[i] == (uint8_t)Direction::COUNT)
-		{
-			continue;
-		}
-
-		tanksData.sights[i] = tanksData.directions[i];
-
-		temp = tanksData.bounds[i];
-
-		if (tanksData.directions[i] == (uint8_t)Direction::UP)
-		{
-			temp.topLeft.y = tanksData.bounds[i].topLeft.y - 1.f;
-			temp.bottomRight.y = tanksData.bounds[i].bottomRight.y - 1.f;
-		}
-		if (tanksData.directions[i] == (uint8_t)Direction::RIGHT)
-		{
-			temp.topLeft.x = tanksData.bounds[i].topLeft.x + 1.f;
-			temp.bottomRight.x = tanksData.bounds[i].bottomRight.x + 1.f;
-		}
-		if (tanksData.directions[i] == (uint8_t)Direction::DOWN)
-		{
-			temp.topLeft.y = tanksData.bounds[i].topLeft.y + 1.f;
-			temp.bottomRight.y = tanksData.bounds[i].bottomRight.y + 1.f;
-		}
-		if (tanksData.directions[i] == (uint8_t)Direction::LEFT)
-		{
-			temp.topLeft.x = tanksData.bounds[i].topLeft.x - 1.f;
-			temp.bottomRight.x = tanksData.bounds[i].bottomRight.x - 1.f;
-		}
 		// Check current (i) tank for collision with another tanks (j)
+
+		if (tanksData.directions[i] != (uint8_t)Direction::COUNT)
+		{
+			tanksData.sights[i] = tanksData.directions[i];
+		}
+
 		for (size_t j{ 0 }; j < tanksData.bounds.size(); ++j)
 		{
 			if (i != j)
 			{
-				if (CheckCollision(temp, tanksData.bounds[j]))
+				if (CheckPotentialCollision(tanksData.directions[i], (float)tanksData.movementSpeeds[i], tanksData.bounds[i], tanksData.bounds[j]))
 				{
 					collidesTank = true;
 					break;
@@ -91,10 +68,10 @@ void MoveTanks(TanksData& tanksData, GameField& fieldData)
 			}			
 		}
 
-		if (!CheckCollision(temp, fieldData) && !collidesTank)
+		if (!CheckPotentialCollision(tanksData.directions[i], (float)tanksData.movementSpeeds[i], tanksData.bounds[i], fieldData) && !collidesTank)
 		{
-			tanksData.positions[i] = temp.topLeft;
-			tanksData.bounds[i] = temp;
+			tanksData.positions[i] = GetPotentialBounds(tanksData.directions[i], (float)tanksData.movementSpeeds[i], tanksData.bounds[i]).topLeft;
+			tanksData.bounds[i] = GetPotentialBounds(tanksData.directions[i], (float)tanksData.movementSpeeds[i], tanksData.bounds[i]);
 		}
 	}
 }
@@ -110,28 +87,29 @@ void Fire(size_t indexOfTank, Bullets& bulletsData, TanksData& tanksData)
 	switch (tanksData.sights[indexOfTank])
 	{
 	case 0:
-		position = Vector2(tanksData.bounds[indexOfTank].bottomRight.x,
+		position = Vector2(tanksData.bounds[indexOfTank].bottomRight.x - BULLET_MAX_LENGHT,
 			(tanksData.bounds[indexOfTank].bottomRight.y + tanksData.bounds[indexOfTank].topLeft.y) / 2 - BULLET_MAX_WIDTH / 2);
 		break;
 	case 1:
-		position = Vector2(tanksData.bounds[indexOfTank].topLeft.x - BULLET_MAX_LENGHT,
+		position = Vector2(tanksData.bounds[indexOfTank].topLeft.x,
 			(tanksData.bounds[indexOfTank].bottomRight.y + tanksData.bounds[indexOfTank].topLeft.y) / 2 - BULLET_MAX_WIDTH / 2);
 		break;
 	case 2:
 		position = Vector2((tanksData.bounds[indexOfTank].topLeft.x + tanksData.bounds[indexOfTank].bottomRight.x) / 2 - BULLET_MAX_WIDTH / 2,
-			tanksData.bounds[indexOfTank].bottomRight.y);
+			tanksData.bounds[indexOfTank].bottomRight.y - BULLET_MAX_LENGHT);
 		break;
 	case 3:
 		position = Vector2((tanksData.bounds[indexOfTank].topLeft.x + tanksData.bounds[indexOfTank].bottomRight.x) / 2 - BULLET_MAX_WIDTH / 2,
-			tanksData.bounds[indexOfTank].topLeft.y - BULLET_MAX_LENGHT);
+			tanksData.bounds[indexOfTank].topLeft.y);
 		break;
 	}
-	AddBullet(indexOfTank, position, tanksData.sights[indexOfTank], bulletsData);
+	AddBullet(indexOfTank, position, tanksData.sights[indexOfTank], tanksData.bulletSpeeds[indexOfTank], bulletsData);
 	tanksData.shots[indexOfTank] = 1;
 }
 
 void DestroyTankAndBullets(size_t index, Bullets& bulletsData, TanksData& tanksData)
 {
+	std::cout << "Destroy tank" << std::endl;
 	destroySprite(tanksData.sprites[index]);
 
 	size_t bulletIndex;
@@ -168,7 +146,7 @@ void DestroyTankAndBullets(size_t index, Bullets& bulletsData, TanksData& tanksD
 }
 
 
-void CheckHits(Bullets& bulletsData, TanksData& tanksData)
+void CheckHits(Bullets& bulletsData, TanksData& tanksData, GameField& fieldData)
 {
 	for (size_t j{ 0 }; j < bulletsData.bounds.size(); ++j)
 	{
@@ -176,18 +154,133 @@ void CheckHits(Bullets& bulletsData, TanksData& tanksData)
 		{
 			if (CheckCollision(bulletsData.bounds[j], tanksData.bounds[i]))
 			{
-				std::cout << "Bullet collision occured" << std::endl;
 				if (!(bulletsData.owners[j] == 0 && i == 0))
 				{
 					if (!(bulletsData.owners[j] != 0 && i != 0))
 					{
-						if (--tanksData.health[i] == 0)
-						{
-							DestroyTankAndBullets(i, bulletsData, tanksData);
-						}
 						DestroyBullet(j, bulletsData, tanksData);
+						--tanksData.health[i];
+						if (i == 0)
+						{
+							RespawnPlayersTank(tanksData, fieldData);
+						}
+						else
+						{
+							if (tanksData.health[i] == 0)
+							{
+								DestroyTankAndBullets(i, bulletsData, tanksData);
+							}
+						}
+						//std::cout << "Owner: " << bulletsData.owners[j] << ", aim: " << i << std::endl;												
 					}				
 				}				
+			}
+		}
+	}
+}
+
+void FireByEnemies(TanksData& tanksData, Bullets& bulletsData)
+{
+	for (size_t i{ 1 }; i < tanksData.bounds.size(); ++i)
+	{
+		Fire(i, bulletsData, tanksData);
+	}
+}
+
+void ControlEnemies(TanksData& tanksData, GameField& fieldData)
+{
+	for (size_t i{ 1 }; i < tanksData.bounds.size(); ++i)
+	{
+		if (!CheckPotentialCollision((uint8_t)Direction::DOWN, (float)tanksData.movementSpeeds[i], tanksData.bounds[i], fieldData) &&
+			!CheckExcludingPotentialCollision(i, (uint8_t)Direction::DOWN, (float)tanksData.movementSpeeds[i], tanksData.bounds[i], tanksData))
+		{
+			tanksData.directions[i] = (uint8_t)Direction::DOWN;
+			tanksData.sights[i] = (uint8_t)Direction::DOWN;
+		}
+		else
+		{
+			if (tanksData.directions[i] == (uint8_t)Direction::DOWN)
+			{
+				tanksData.directions[i] = (uint8_t)Direction::RIGHT;
+				tanksData.sights[i] = (uint8_t)Direction::RIGHT;
+			}
+			else
+			{
+				if (tanksData.directions[i] == (uint8_t)Direction::RIGHT)
+				{
+					if (!CheckPotentialCollision((uint8_t)Direction::RIGHT, (float)tanksData.movementSpeeds[i], tanksData.bounds[i], fieldData) &&
+						!CheckExcludingPotentialCollision(i, (uint8_t)Direction::RIGHT, (float)tanksData.movementSpeeds[i], tanksData.bounds[i], tanksData))
+					{
+						continue;
+					}
+					else
+					{
+						tanksData.directions[i] = (uint8_t)Direction::LEFT;
+						tanksData.sights[i] = (uint8_t)Direction::LEFT;
+					}
+				}
+				else
+				{
+					if (!CheckPotentialCollision((uint8_t)Direction::LEFT, (float)tanksData.movementSpeeds[i], tanksData.bounds[i], fieldData) &&
+						!CheckExcludingPotentialCollision(i, (uint8_t)Direction::LEFT, (float)tanksData.movementSpeeds[i], tanksData.bounds[i], tanksData))
+					{
+						continue;
+					}
+					else
+					{
+						tanksData.directions[i] = (uint8_t)Direction::RIGHT;
+						tanksData.sights[i] = (uint8_t)Direction::RIGHT;
+					}
+				}
+			}
+		}
+	}
+}
+
+void RespawnPlayersTank(TanksData& tanksData, GameField& fieldData)
+{
+	if (tanksData.health[0] == 0)
+	{
+		fieldData.baseDefeated = true;
+		return;
+	}
+
+	Vector2 spawnPos;
+	for (uint8_t i{ 1 }; i < LEVEL_X_SIZE-1; ++i)
+	{
+		if (level[LEVEL_Y_SIZE-3][i] == 8)
+		{
+			spawnPos = Vector2(i * TILE_SIZE + 1, (LEVEL_Y_SIZE - 3) * TILE_SIZE + 1);
+			if (!CheckExcludingCollision(0, Bounds(spawnPos, Vector2(spawnPos.x + 40, spawnPos.y + 40)), tanksData))
+			{
+				std::cout << "Respawn" << std::endl;
+				tanksData.bounds[0].topLeft = spawnPos;
+				tanksData.bounds[0].bottomRight = Vector2(spawnPos.x + 40, spawnPos.y + 40);
+				tanksData.positions[0] = spawnPos;
+				tanksData.directions[0] = (uint8_t)Direction::COUNT;
+				tanksData.sights[0] = (uint8_t)Direction::UP;
+				return;
+			}
+		}
+	}
+	fieldData.baseDefeated = true;
+}
+
+
+void SpawnEnemy(int& enemiesCount, TanksData& tanksData)
+{
+	Vector2 spawnPos;
+	for (uint8_t i{ 0 }; i < LEVEL_X_SIZE; ++i)
+	{
+		if (level[1][i] == 9)
+		{
+			spawnPos = Vector2(i * TILE_SIZE, TILE_SIZE);
+			if (!CheckCollision(Bounds(spawnPos, Vector2(spawnPos.x + 40, spawnPos.y + 40)), tanksData))
+			{
+				std::cout << "Enemy spawned" << std::endl;
+				AddTank(0, spawnPos, tanksData);
+				++enemiesCount;
+				return;
 			}
 		}
 	}

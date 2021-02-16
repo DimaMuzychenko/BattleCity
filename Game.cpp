@@ -5,11 +5,14 @@
 #include "GameField.h"
 #include "Level.h"
 #include "Bullet.h"
+#include <chrono>
+#include <thread>
+#include <random>
+#include "Bonus.h"
 
 void DrawGameObjects(const GameObject& goData);
 void DrawTanks(const TanksData& tanksData);
 void DrawField(const GameField& wallsData);
-void SpawnEnemy(int& enemiesCount, TanksData& tanksData);
 
 
 class Game : public Framework {
@@ -18,7 +21,7 @@ public:
 
 	virtual void PreInit(int& width, int& height, bool& fullscreen)
 	{
-		width = 600;
+		width = 624;
 		height = 600;
 		fullscreen = false;
 	}
@@ -26,9 +29,11 @@ public:
 	virtual bool Init() {
 		LoadLevel(fieldData);
 		backGround = createSprite("Resources\\BG.png");
-		Vector2 pos(400, 300);
+		Vector2 pos(0, 0);
 		AddTank(0, pos, tanksData);
-		SpawnEnemy(enemiesCount, tanksData);
+		RespawnPlayersTank(tanksData, fieldData);
+		srand(time(0));
+		enemiesCount = 0;
 		return true;
 	}
 
@@ -37,23 +42,54 @@ public:
 	}
 
 	virtual bool Tick() 
-	{	
+	{
 		drawSprite(backGround, 0, 0);
 		DrawGameObjects(fieldData);
 		DrawGameObjects(fieldData);
 		DrawGameObjects(tanksData);
 		DrawGameObjects(bulletsData);
+		DrawGameObjects(bonusesData);
 		if (!fieldData.baseDefeated)
-		{
-			if (tanksData.bounds.size() < 4 && enemiesCount <= 20)
+		{			
+			CheckHits(bulletsData, tanksData, fieldData);
+			UpdateSprites(tanksData);			
+			UpdateWallsState(fieldData, bulletsData, tanksData);
+			TakeBonus(0, tanksData, bonusesData);
+			if (std::chrono::steady_clock::now() - lastObjectsMoveTime > std::chrono::milliseconds(10))
+			{
+				MoveTanks(tanksData, fieldData);
+				MoveBullets(bulletsData);
+				lastObjectsMoveTime = std::chrono::steady_clock::now();
+			}
+			if (std::chrono::steady_clock::now() - lastControlTime > std::chrono::milliseconds(500))
+			{
+				ControlEnemies(tanksData, fieldData);
+				lastControlTime = std::chrono::steady_clock::now();
+			}			
+			if (std::chrono::steady_clock::now() - lastShotTime > std::chrono::milliseconds(2000))
+			{
+				FireByEnemies(tanksData, bulletsData);
+				lastShotTime = std::chrono::steady_clock::now();
+			}			
+			if (tanksData.bounds.size() < 3 && enemiesCount <= 20)
 			{
 				SpawnEnemy(enemiesCount, tanksData);
 			}
-			CheckHits(bulletsData, tanksData);
-			UpdateSprites(tanksData);
-			MoveTanks(tanksData, fieldData);
-			MoveBullets(bulletsData);
-			UpdateWallsState(fieldData, bulletsData, tanksData);
+			if ((enemiesCount == 6 && bonusCount == 0)||(enemiesCount == 13 && bonusCount == 1)||(enemiesCount == 20 && bonusCount == 2))
+			{				
+				SpawnBonus(Bonus::HEALTH, bonusesData);
+				bonusCount++;
+			}
+			if ((enemiesCount == 12 && bonusCount == 1) || (enemiesCount == 19 && bonusCount == 2))
+			{
+				for (size_t i{ 0 }; i < bonusesData.types.size(); ++i)
+				{
+					if (bonusesData.types[i] == Bonus::HEALTH)
+					{
+						DestroyBonus(i, bonusesData);
+					}
+				}
+			}
 		}
 		return false;
 	}
@@ -121,8 +157,13 @@ public:
 	TanksData tanksData;
 	GameField fieldData;
 	Bullets bulletsData;
+	Bonuses bonusesData;
 	Sprite* backGround;
 	int enemiesCount{ 0 };
+	int bonusCount{ 0 };
+	std::chrono::time_point<std::chrono::steady_clock> lastShotTime;
+	std::chrono::time_point<std::chrono::steady_clock> lastControlTime;
+	std::chrono::time_point<std::chrono::steady_clock> lastObjectsMoveTime;
 };
 
 int main(int argc, char* argv[])
@@ -152,21 +193,4 @@ void DrawField(const GameField& wallsData)
 	{
 		drawSprite(wallsData.sprites[i], (int)wallsData.positions[i].x, (int)wallsData.positions[i].y);
 	}
-}
-
-void SpawnEnemy(int& enemiesCount, TanksData& tanksData)
-{
-	Vector2 spawnPos;
-	for (uint8_t i{ 0 }; i < LEVEL_X_SIZE; ++i)
-	{
-		if (level[1][i] == 9)
-		{
-			spawnPos = Vector2(i * TILE_SIZE, TILE_SIZE);
-			if (!CheckCollision(Bounds(spawnPos, Vector2(spawnPos.x + 40, spawnPos.y + 40)), tanksData))
-			{
-				AddTank(0, spawnPos, tanksData);
-				enemiesCount++;
-			}
-		}
-	}	
 }

@@ -38,6 +38,9 @@ bool CheckCollision(size_t index, const GameObject& objectsData, const GameObjec
 /// <param name="obstaclesData">Data of objects that can be obstacles.</param>
 bool CheckCollision(const Bounds& object, const GameObject& obstaclesData);
 
+
+bool CheckExcludingCollision(size_t index, const Bounds& object, const GameObject& obstaclesData);
+
 /// <summary>
 /// Check for collision of game objects.
 /// </summary>
@@ -45,3 +48,21 @@ bool CheckCollision(const Bounds& object, const GameObject& obstaclesData);
 /// <param name="obstacle">Bounds of objects that can be obstacles.</param>
 bool CheckCollision(const Bounds& object, const Bounds& obstacle);
 
+/// <summary>
+/// Check for collision of game objects in specified direction with specified step. Returns whether collision will occure. In case of collision will not occure object's bounds will changed into potential bounds.
+/// </summary>
+/// <param name="direction">Direction of object movement.</param>
+/// <param name="step">Speed of object movement per iteration.</param>
+/// <param name="object">Bounds of object to be checked for collision.</param>
+/// <param name="obstacle">Bounds of objects that can be obstacles.</param>
+bool CheckPotentialCollision(uint8_t direction, float step, Bounds& object, const GameObject& obstacles);
+
+
+bool CheckExcludingPotentialCollision(size_t index, uint8_t direction, float step, const Bounds& object, const GameObject& obstacles);
+
+
+bool CheckPotentialCollision(uint8_t direction, float step, const Bounds& object, const Bounds& obstacle);
+
+size_t GetObstacle(const Bounds& object, const GameObject& obstaclesData);
+
+Bounds GetPotentialBounds(uint8_t direction, float step, const Bounds& object);

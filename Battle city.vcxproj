@@ -151,15 +151,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Bonus.cpp" />
     <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="GameField.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="BasicStructures.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Tank.cpp" />
+    <ClCompile Include="TanksController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\task2021_win64\Framework.h" />
+    <ClInclude Include="Bonus.h" />
     <ClInclude Include="Bullet.h" />
     <ClInclude Include="GameField.h" />
     <ClInclude Include="GameObject.h" />
@@ -167,6 +170,7 @@
     <ClInclude Include="Level.h" />
     <ClInclude Include="Tank.h" />
     <ClInclude Include="BasicStructures.h" />
+    <ClInclude Include="TanksController.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
