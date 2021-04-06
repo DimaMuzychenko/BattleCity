@@ -69,6 +69,7 @@ void LoadLevel(GameField& fieldData)
 
 void DestroyTile(size_t index, GameField& fieldData)
 {
+	destroySprite(fieldData.sprites[index]);
 	std::vector<uint8_t>::iterator typeIter(fieldData.types.begin() + index);
 	fieldData.types.erase(typeIter);
 	std::vector<Vector2>::iterator posIter(fieldData.positions.begin() + index);

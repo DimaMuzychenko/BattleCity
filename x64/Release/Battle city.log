@@ -1,8 +1,21 @@
-﻿  Game.cpp
-I:\Games\MyGames\Battle city\Game.cpp(35,13): warning C4244: аргумент: преобразование "time_t" в "unsigned int", возможна потеря данных
-  Создание кода
-  289 of 528 functions (54.7%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    35 functions had inline decision re-evaluated but remain unchanged
-  Создание кода завершено
+﻿  Bonus.cpp
+I:\Games\MyGames\Battle city\Bonus.cpp(17,44): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+I:\Games\MyGames\Battle city\Bonus.cpp(17,29): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+I:\Games\MyGames\Battle city\Bonus.cpp(17,115): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+I:\Games\MyGames\Battle city\Bonus.cpp(17,80): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  Bullet.cpp
+  GameField.cpp
+  Game.cpp
+I:\Games\MyGames\Battle city\Game.cpp(35,13): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  BasicStructures.cpp
+  GameObject.cpp
+  Tank.cpp
+I:\Games\MyGames\Battle city\Tank.cpp(254,37): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+I:\Games\MyGames\Battle city\Tank.cpp(278,25): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  TanksController.cpp
+  Generating code
+  Previous IPDB was built with incompatible compiler, fall back to full compilation.
+I:\Games\MyGames\Battle city\Bonus.cpp(21): warning C4715: 'GetNewBonusBounds': not all control paths return a value
+  All 529 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
   Battle city.vcxproj -> I:\Games\MyGames\Battle city\x64\Release\Battle city.exe

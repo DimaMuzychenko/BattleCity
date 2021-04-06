@@ -38,6 +38,7 @@ void UpdateSprites(TanksData& tanksData)
 	{
 		if (tanksData.directions[i] < 4)
 		{
+			destroySprite(tanksData.sprites[i]);
 			spritePath = (i == 0 ? GOLDEN : SILVER) + std::to_string(tanksData.tiers[i]) + "_" + std::to_string(tanksData.directions[i]) + "_0.png";
 			tanksData.sprites[i] = createSprite(spritePath.c_str());
 		}
